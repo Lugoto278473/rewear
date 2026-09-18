@@ -1,0 +1,111 @@
+.setup-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  background-image: radial-gradient(
+      circle at 15% 15%,
+      var(--accent-soft) 0%,
+      transparent 45%
+    ),
+    radial-gradient(circle at 85% 80%, #fdf1e3 0%, transparent 45%);
+}
+
+.setup-box {
+  background: var(--surface);
+  padding: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 560px;
+}
+
+.setup-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.setup-box h1 {
+  font-size: 26px;
+  margin: 14px 0 8px 0;
+  font-weight: 700;
+}
+
+.setup-lead {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0 0 24px 0;
+}
+
+.setup-steps {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.setup-steps strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.setup-steps li::marker {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.setup-steps code {
+  padding: 2px 6px;
+  background: var(--surface-sunken);
+  border-radius: 5px;
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+.setup-steps pre {
+  margin: 10px 0;
+  padding: 14px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-x: auto;
+}
+
+.setup-back {
+  margin-top: 26px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  transition: color 0.15s;
+}
+
+.setup-back:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .setup-box {
+    padding: 28px 22px;
+  }
+}

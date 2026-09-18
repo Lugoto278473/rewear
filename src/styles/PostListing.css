@@ -1,0 +1,92 @@
+.post-listing-section {
+  max-width: 560px;
+}
+
+.post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--surface);
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.post-form input,
+.post-form textarea,
+.post-form select {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.post-form textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+.post-form select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1.4 0 6 4.6 10.6 0 12 1.4 6 7.4 0 1.4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+}
+
+.post-form input::placeholder,
+.post-form textarea::placeholder {
+  color: var(--text-faint);
+}
+
+.post-form input:focus,
+.post-form textarea:focus,
+.post-form select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  outline: none;
+}
+
+.post-form button[type='submit'] {
+  margin-top: 6px;
+  padding: 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.15s, transform 0.05s;
+}
+
+.post-form button[type='submit']:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.post-form button[type='submit']:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.post-form button[type='submit']:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.post-listing-section .success {
+  margin: 0 0 14px 0;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  color: var(--success);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.post-listing-section .error {
+  margin: 0 0 14px 0;
+}

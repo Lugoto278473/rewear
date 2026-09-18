@@ -1,0 +1,71 @@
+.App {
+  min-height: 100vh;
+}
+
+.demo-banner {
+  /* Intentionally not sticky — the dashboard header is, and two elements
+     pinned to top: 0 would overlap on scroll. */
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 9px 20px;
+  background: var(--text);
+  color: #fff;
+  font-size: 13px;
+}
+
+.demo-banner strong {
+  font-weight: 600;
+}
+
+.demo-banner button {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.demo-banner button:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.loading::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading::before {
+    animation: none;
+  }
+}

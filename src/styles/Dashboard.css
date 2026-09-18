@@ -1,0 +1,128 @@
+.dashboard {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 32px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-sunken);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+}
+
+.header-actions button {
+  padding: 7px 15px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+
+.header-actions button:hover {
+  color: var(--text);
+}
+
+.header-actions button.active {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-actions .signout-btn {
+  margin-left: 4px;
+  color: var(--text-faint);
+}
+
+.header-actions .signout-btn:hover {
+  color: var(--danger);
+}
+
+.content {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 36px 32px 72px;
+}
+
+.content h2 {
+  margin: 0 0 22px 0;
+  font-size: 22px;
+  font-weight: 650;
+}
+
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 22px;
+}
+
+.browse-section > p {
+  color: var(--text-muted);
+  padding: 48px 0;
+  text-align: center;
+}
+
+.profile-section {
+  background: var(--surface);
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  max-width: 460px;
+}
+
+.profile-section h2 {
+  margin-bottom: 14px;
+}
+
+.profile-section p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 14px 18px;
+  }
+
+  .content {
+    padding: 24px 18px 56px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .header-actions button {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+}
