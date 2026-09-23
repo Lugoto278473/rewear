@@ -5,7 +5,7 @@ import '../styles/ListingCard.css';
 const PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Crect width='250' height='250' fill='%23f2f1ee'/%3E%3Ctext x='50%25' y='50%25' fill='%239ca3af' font-family='sans-serif' font-size='13' text-anchor='middle'%3ENo photo%3C/text%3E%3C/svg%3E";
 
-export default function ListingCard({ listing }) {
+export default function ListingCard({ listing, isOwn, onInquire }) {
   const image =
     listing.images && listing.images.length > 0
       ? listing.images[0]
@@ -38,7 +38,15 @@ export default function ListingCard({ listing }) {
             <span>New seller</span>
           )}
         </div>
-        <button className="inquire-btn">Inquire</button>
+        {isOwn ? (
+          <button className="inquire-btn" disabled>
+            Your listing
+          </button>
+        ) : (
+          <button className="inquire-btn" onClick={() => onInquire(listing)}>
+            Inquire
+          </button>
+        )}
       </div>
     </div>
   );

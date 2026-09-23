@@ -116,9 +116,14 @@
   transition: background 0.15s, color 0.15s;
 }
 
-.inquire-btn:hover {
+.inquire-btn:hover:not(:disabled) {
   background: var(--accent);
   color: #fff;
+}
+
+.inquire-btn:disabled {
+  color: var(--text-faint);
+  cursor: default;
 }
 
 @media (prefers-reduced-motion: reduce) {

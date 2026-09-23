@@ -64,17 +64,28 @@ const SEED = {
       created_at: '2026-09-17T08:00:00.000Z',
     },
   ],
+  messages: [],
 };
 
 function load() {
+  const fresh = { ...SEED, session: null, credentials: {} };
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw);
+    // Merge over the seed so data saved before a table existed still loads.
+    if (raw) return { ...fresh, ...JSON.parse(raw) };
   } catch {
     // Private mode or corrupt payload — fall through to a fresh seed.
   }
-  return { ...SEED, session: null, credentials: {} };
+  return fresh;
 }
+
+const toDataUrl = (blob) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
 
 function save(db) {
   try {
@@ -115,9 +126,13 @@ export function createMockClient() {
 
       if (!db[table]) return fail(`relation "${table}" does not exist`);
 
-      let rows = db[table].filter((row) =>
-        filters.every(([col, val]) => row[col] === val)
-      );
+      let rows = db[table].filter((row) => filters.every((test) => test(row)));
+
+      // Mirrors the messages RLS policy: you only see conversations you're in.
+      if (table === 'messages') {
+        const me = db.session?.user.id;
+        rows = rows.filter((m) => m.sender_id === me || m.recipient_id === me);
+      }
 
       if (order) {
         const [col, asc] = order;
@@ -148,7 +163,11 @@ export function createMockClient() {
         return builder;
       },
       eq(column, value) {
-        filters.push([column, value]);
+        filters.push((row) => row[column] === value);
+        return builder;
+      },
+      in(column, values) {
+        filters.push((row) => values.includes(row[column]));
         return builder;
       },
       order(column, { ascending = true } = {}) {
@@ -165,6 +184,9 @@ export function createMockClient() {
       },
       async insert(row) {
         await delay();
+        if (table === 'messages' && row.sender_id !== db.session?.user.id) {
+          return fail('new row violates row-level security policy for table "messages"');
+        }
         const record = {
           ...row,
           id: row.id ?? `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -255,5 +277,24 @@ export function createMockClient() {
     },
   };
 
-  return { auth, from };
+  // Uploaded files become data URLs held in memory. The listing row stores
+  // the URL itself, so the file survives a reload without being saved twice.
+  const files = new Map();
+
+  const storage = {
+    from(bucket) {
+      return {
+        async upload(path, file) {
+          await delay();
+          files.set(`${bucket}/${path}`, await toDataUrl(file));
+          return ok({ path });
+        },
+        getPublicUrl(path) {
+          return { data: { publicUrl: files.get(`${bucket}/${path}`) ?? '' } };
+        },
+      };
+    },
+  };
+
+  return { auth, from, storage };
 }

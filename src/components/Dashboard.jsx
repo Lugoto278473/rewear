@@ -2,11 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import ListingCard from './ListingCard';
 import PostListing from './PostListing';
+import Messages from './Messages';
 import '../styles/Dashboard.css';
 
 export default function Dashboard({ session }) {
   const [listings, setListings] = useState([]);
   const [view, setView] = useState('browse');
+  // A conversation to open in Messages, started from a listing's Inquire.
+  const [draft, setDraft] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
@@ -51,6 +54,16 @@ export default function Dashboard({ session }) {
     await supabase.auth.signOut();
   };
 
+  const handleInquire = (listing) => {
+    setDraft({
+      listingId: listing.id,
+      listingTitle: listing.title,
+      otherId: listing.seller_id,
+      otherName: listing.users?.username,
+    });
+    setView('messages');
+  };
+
   return (
     <div className="dashboard">
       <header className="header">
@@ -67,6 +80,15 @@ export default function Dashboard({ session }) {
             onClick={() => setView('post')}
           >
             Post Item
+          </button>
+          <button
+            className={view === 'messages' ? 'active' : ''}
+            onClick={() => {
+              setDraft(null);
+              setView('messages');
+            }}
+          >
+            Messages
           </button>
           <button
             className={view === 'profile' ? 'active' : ''}
@@ -91,7 +113,12 @@ export default function Dashboard({ session }) {
             ) : (
               <div className="listings-grid">
                 {listings.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} />
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    isOwn={listing.seller_id === session.user.id}
+                    onInquire={handleInquire}
+                  />
                 ))}
               </div>
             )}
@@ -99,6 +126,8 @@ export default function Dashboard({ session }) {
         )}
 
         {view === 'post' && <PostListing onListingCreated={fetchListings} />}
+
+        {view === 'messages' && <Messages session={session} draft={draft} />}
 
         {view === 'profile' && user && (
           <div className="profile-section">

@@ -76,6 +76,8 @@ and the whole app follows.
   would reject it.
 - Sign-up requires email confirmation by default. Turn that off in Supabase →
   Authentication → Providers → Email if you want instant logins while developing.
-- Listings support an `images` text array, but there's no upload UI yet; cards
-  fall back to a placeholder.
-- The "Inquire" button is not wired up yet.
+- After `schema.sql`, also run `supabase/002_photos_and_messages.sql`. It adds
+  the `listing-images` storage bucket and the `messages` table.
+- Photos (up to 4) are resized to JPEG in the browser, then uploaded.
+- "Inquire" opens a thread in the Messages tab. New messages are polled every
+  15s; there's no realtime yet.

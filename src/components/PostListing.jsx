@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { MAX_PHOTOS, uploadListingPhotos } from '../photos';
 import '../styles/PostListing.css';
 
 export default function PostListing({ onListingCreated }) {
@@ -13,6 +14,35 @@ export default function PostListing({ onListingCreated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [photos, setPhotos] = useState([]); // { file, preview }
+
+  // Object URLs hold the file in memory until revoked. The ref lets the
+  // unmount cleanup see the latest list.
+  const photosRef = useRef(photos);
+  photosRef.current = photos;
+  useEffect(
+    () => () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.preview)),
+    []
+  );
+
+  const handlePhotos = (e) => {
+    const picked = Array.from(e.target.files).filter((f) =>
+      f.type.startsWith('image/')
+    );
+    e.target.value = ''; // let the same file be picked again after removal
+
+    const room = MAX_PHOTOS - photos.length;
+    if (picked.length > room) setError(`Up to ${MAX_PHOTOS} photos per listing.`);
+    const added = picked
+      .slice(0, room)
+      .map((file) => ({ file, preview: URL.createObjectURL(file) }));
+    setPhotos([...photos, ...added]);
+  };
+
+  const removePhoto = (index) => {
+    URL.revokeObjectURL(photos[index].preview);
+    setPhotos(photos.filter((_, i) => i !== index));
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,6 +60,10 @@ export default function PostListing({ onListingCreated }) {
     try {
       const user = (await supabase.auth.getUser()).data.user;
 
+      const images = photos.length
+        ? await uploadListingPhotos(user.id, photos.map((p) => p.file))
+        : null;
+
       const { error: insertError } = await supabase.from('listings').insert({
         seller_id: user.id,
         title: formData.title,
@@ -37,6 +71,7 @@ export default function PostListing({ onListingCreated }) {
         category: formData.category,
         price: parseFloat(formData.price),
         condition: formData.condition,
+        images,
         status: 'active',
       });
 
@@ -50,6 +85,8 @@ export default function PostListing({ onListingCreated }) {
         price: '',
         condition: 'like-new',
       });
+      photos.forEach((p) => URL.revokeObjectURL(p.preview));
+      setPhotos([]);
 
       setTimeout(() => setSuccess(false), 3000);
       onListingCreated();
@@ -68,6 +105,36 @@ export default function PostListing({ onListingCreated }) {
       {error && <p className="error">{error}</p>}
 
       <form onSubmit={handleSubmit} className="post-form">
+        <div className="photo-picker">
+          {photos.map((p, i) => (
+            <div className="photo-thumb" key={p.preview}>
+              <img src={p.preview} alt={`Upload ${i + 1}`} />
+              {i === 0 && <span className="photo-cover">Cover</span>}
+              <button
+                type="button"
+                onClick={() => removePhoto(i)}
+                aria-label={`Remove photo ${i + 1}`}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          {photos.length < MAX_PHOTOS && (
+            <label className="photo-add">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handlePhotos}
+              />
+              <span>+ Add photos</span>
+              <small>
+                {photos.length}/{MAX_PHOTOS}
+              </small>
+            </label>
+          )}
+        </div>
+
         <input
           type="text"
           name="title"
@@ -120,7 +187,11 @@ export default function PostListing({ onListingCreated }) {
         />
 
         <button type="submit" disabled={loading}>
-          {loading ? 'Posting...' : 'Post Item'}
+          {loading
+            ? photos.length
+              ? 'Uploading photos...'
+              : 'Posting...'
+            : 'Post Item'}
         </button>
       </form>
     </div>
