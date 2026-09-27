@@ -16,7 +16,7 @@
 .auth-box {
   background: var(--surface);
   padding: 40px;
-  border: 1px solid var(--border);
+  border: 2px solid #222;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   width: 100%;
@@ -63,7 +63,7 @@
 .auth-box input {
   padding: 12px 14px;
   background: var(--surface);
-  border: 1px solid var(--border-strong);
+  border: 2px solid #9a968f;
   border-radius: var(--radius-sm);
   font-size: 14px;
   outline: none;
@@ -78,6 +78,31 @@
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
   outline: none;
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.show-password {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  padding: 6px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+}
+
+.show-password:hover {
+  color: var(--text);
 }
 
 .auth-box button[type='submit'] {
