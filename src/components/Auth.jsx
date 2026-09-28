@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase, isDemo } from '../supabaseClient';
 import '../styles/Auth.css';
 
-export default function Auth({ onClose }) {
+export default function Auth({ onClose, onShowTerms }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -113,6 +113,16 @@ export default function Auth({ onClose }) {
           <button type="submit" disabled={loading}>
             {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
           </button>
+
+          {isSignUp && (
+            <p className="terms-note">
+              By signing up you agree to the{' '}
+              <button type="button" className="terms-link" onClick={onShowTerms}>
+                Terms and Services
+              </button>
+              .
+            </p>
+          )}
         </form>
 
         <button
