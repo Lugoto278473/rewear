@@ -6,7 +6,6 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -19,30 +18,22 @@ export default function Auth() {
     setMessage('');
 
     try {
-      const { data: taken, error: lookupError } = await supabase
-        .from('users')
-        .select('username')
-        .eq('username', username)
-        .maybeSingle();
-
-      if (lookupError) throw lookupError;
-      if (taken) throw new Error('That username is taken. Try another.');
-
-      // The profile row is created by the on_auth_user_created trigger, which
-      // reads the username from here. A client-side insert can't work: there's
-      // no session until the email is confirmed, so RLS would reject it.
-      const { error: authError } = await supabase.auth.signUp({
+      // The on_auth_user_created trigger creates the profile row and derives
+      // the username from the email when none is given.
+      const { data, error: authError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { username } },
       });
 
       if (authError) throw authError;
 
+      // With email confirmation off, sign-up returns a session and the user is
+      // already signed in.
+      if (data?.session) return;
+
       setMessage('Almost there — check your email to confirm your account.');
       setEmail('');
       setPassword('');
-      setUsername('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -84,15 +75,6 @@ export default function Auth() {
         )}
 
         <form onSubmit={isSignUp ? handleSignUp : handleSignIn}>
-          {isSignUp && (
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          )}
           <input
             type="email"
             placeholder="Email"
