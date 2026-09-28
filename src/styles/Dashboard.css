@@ -126,3 +126,41 @@
     font-size: 13px;
   }
 }
+
+.header-actions .login-btn {
+  margin-left: 4px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.header-actions .login-btn:hover {
+  background: var(--accent-hover);
+  color: #fff;
+}
+
+.empty-spot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  aspect-ratio: 1 / 1;
+  background: var(--surface-sunken);
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.empty-spot span {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.empty-spot:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

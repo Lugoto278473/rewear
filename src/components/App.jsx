@@ -9,6 +9,7 @@ function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showSetup, setShowSetup] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -20,6 +21,8 @@ function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      // Close the log-in popup once someone signs in.
+      if (session) setShowAuth(false);
     });
 
     return () => subscription.unsubscribe();
@@ -41,7 +44,8 @@ function App() {
           </button>
         </div>
       )}
-      {!session ? <Auth /> : <Dashboard session={session} />}
+      <Dashboard session={session} onLogin={() => setShowAuth(true)} />
+      {showAuth && !session && <Auth onClose={() => setShowAuth(false)} />}
     </div>
   );
 }

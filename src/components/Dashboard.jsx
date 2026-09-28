@@ -5,7 +5,10 @@ import PostListing from './PostListing';
 import Messages from './Messages';
 import '../styles/Dashboard.css';
 
-export default function Dashboard({ session }) {
+// The browse grid always shows at least this many spots.
+const MIN_SPOTS = 8;
+
+export default function Dashboard({ session, onLogin }) {
   const [listings, setListings] = useState([]);
   const [view, setView] = useState('browse');
   // A conversation to open in Messages, started from a listing's Inquire.
@@ -30,12 +33,18 @@ export default function Dashboard({ session }) {
     }
   }, []);
 
+  const userId = session?.user.id;
+
   const fetchUser = useCallback(async () => {
+    if (!userId) {
+      setUser(null);
+      return;
+    }
     try {
       const { data, error } = await supabase
         .from('users')
         .select('*')
-        .eq('id', session.user.id)
+        .eq('id', userId)
         .single();
 
       if (error) throw error;
@@ -43,18 +52,32 @@ export default function Dashboard({ session }) {
     } catch (err) {
       console.error(err);
     }
-  }, [session.user.id]);
+  }, [userId]);
 
   useEffect(() => {
     fetchListings();
     fetchUser();
   }, [fetchListings, fetchUser]);
 
+  // Visitors can browse freely; selling and messaging need an account.
+  const goTo = (next) => {
+    if (next !== 'browse' && !session) {
+      onLogin();
+      return;
+    }
+    setView(next);
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    setView('browse');
   };
 
   const handleInquire = (listing) => {
+    if (!session) {
+      onLogin();
+      return;
+    }
     setDraft({
       listingId: listing.id,
       listingTitle: listing.title,
@@ -71,13 +94,13 @@ export default function Dashboard({ session }) {
         <div className="header-actions">
           <button
             className={view === 'browse' ? 'active' : ''}
-            onClick={() => setView('browse')}
+            onClick={() => goTo('browse')}
           >
             Browse
           </button>
           <button
             className={view === 'post' ? 'active' : ''}
-            onClick={() => setView('post')}
+            onClick={() => goTo('post')}
           >
             Post Item
           </button>
@@ -85,20 +108,28 @@ export default function Dashboard({ session }) {
             className={view === 'messages' ? 'active' : ''}
             onClick={() => {
               setDraft(null);
-              setView('messages');
+              goTo('messages');
             }}
           >
             Messages
           </button>
-          <button
-            className={view === 'profile' ? 'active' : ''}
-            onClick={() => setView('profile')}
-          >
-            Profile
-          </button>
-          <button onClick={handleSignOut} className="signout-btn">
-            Sign Out
-          </button>
+          {session ? (
+            <>
+              <button
+                className={view === 'profile' ? 'active' : ''}
+                onClick={() => goTo('profile')}
+              >
+                Profile
+              </button>
+              <button onClick={handleSignOut} className="signout-btn">
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <button onClick={onLogin} className="login-btn">
+              Log in
+            </button>
+          )}
         </div>
       </header>
 
@@ -106,30 +137,41 @@ export default function Dashboard({ session }) {
         {view === 'browse' && (
           <div className="browse-section">
             <h2>Browse Items</h2>
-            {loading ? (
-              <p>Loading...</p>
-            ) : listings.length === 0 ? (
+            {!loading && listings.length === 0 && (
               <p>No items yet. Be the first to post!</p>
-            ) : (
-              <div className="listings-grid">
-                {listings.map((listing) => (
-                  <ListingCard
-                    key={listing.id}
-                    listing={listing}
-                    isOwn={listing.seller_id === session.user.id}
-                    onInquire={handleInquire}
-                  />
-                ))}
-              </div>
             )}
+            <div className="listings-grid">
+              {listings.map((listing) => (
+                <ListingCard
+                  key={listing.id}
+                  listing={listing}
+                  isOwn={listing.seller_id === userId}
+                  onInquire={handleInquire}
+                />
+              ))}
+              {/* Top up a sparse shop with empty spots that invite selling. */}
+              {Array.from(
+                { length: Math.max(0, MIN_SPOTS - listings.length) },
+                (_, i) => (
+                  <button
+                    key={`empty-${i}`}
+                    className="empty-spot"
+                    onClick={() => goTo('post')}
+                  >
+                    <span>+</span>
+                    Sell an item
+                  </button>
+                )
+              )}
+            </div>
           </div>
         )}
 
-        {view === 'post' && <PostListing onListingCreated={fetchListings} />}
+        {view === 'post' && session && <PostListing onListingCreated={fetchListings} />}
 
-        {view === 'messages' && <Messages session={session} draft={draft} />}
+        {view === 'messages' && session && <Messages session={session} draft={draft} />}
 
-        {view === 'profile' && user && (
+        {view === 'profile' && session && user && (
           <div className="profile-section">
             <h2>{user.username}</h2>
             <p>Email: {session.user.email}</p>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase, isDemo } from '../supabaseClient';
 import '../styles/Auth.css';
 
-export default function Auth() {
+export default function Auth({ onClose }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -62,8 +62,11 @@ export default function Auth() {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
+    <div className="auth-container" onClick={onClose}>
+      <div className="auth-box" onClick={(e) => e.stopPropagation()}>
+        <button className="close-btn" onClick={onClose} aria-label="Close">
+          ×
+        </button>
         <h1>ReWear</h1>
         <p className="tagline">Buy & sell secondhand. Any age. Fresh finds.</p>
 

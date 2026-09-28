@@ -164,3 +164,33 @@
 .toggle-btn:hover {
   color: var(--accent);
 }
+
+/* Log-in popup: dims the shop behind it. */
+.auth-container {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  min-height: 0;
+  background: rgba(20, 20, 20, 0.45);
+  background-image: none;
+}
+
+.auth-box {
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  color: var(--text);
+}
