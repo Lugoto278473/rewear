@@ -39,13 +39,19 @@ export default function ListingCard({ listing, isOwn, onInquire }) {
           )}
         </div>
         {isOwn ? (
-          <button className="inquire-btn" disabled>
+          <button className="offer-btn disabled" disabled>
             Your listing
           </button>
         ) : (
-          <button className="inquire-btn" onClick={() => onInquire(listing)}>
-            Inquire
-          </button>
+          <div className="card-actions">
+            <button className="offer-btn" onClick={() => onInquire(listing)}>
+              Make Offer
+            </button>
+            <button className="buy-btn" onClick={() => onInquire(listing)}>
+              Buy Now
+            </button>
+            <p className="trust-note">Payment held safely until delivery</p>
+          </div>
         )}
       </div>
     </div>

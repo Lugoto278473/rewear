@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createMockClient } from './mockClient';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseKey = process.env.REACT_APP_SUPABASE_KEY;
+const supabaseKey = process.env.REACT_APP_SUPABASE_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY;
 
 export const isConfigured = Boolean(supabaseUrl && supabaseKey);
 

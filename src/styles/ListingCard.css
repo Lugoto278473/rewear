@@ -104,26 +104,63 @@
   color: var(--text-faint);
 }
 
-.inquire-btn {
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-top: auto;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.offer-btn, .buy-btn {
+  flex: 1;
   padding: 9px;
-  background: var(--surface-sunken);
-  color: var(--text);
   border: none;
   border-radius: var(--radius-sm);
   font-size: 13px;
   font-weight: 600;
-  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.inquire-btn:hover:not(:disabled) {
+.offer-btn {
+  background: var(--surface-sunken);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.offer-btn:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.buy-btn {
   background: var(--accent);
   color: #fff;
 }
 
-.inquire-btn:disabled {
+.buy-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.offer-btn.disabled {
   color: var(--text-faint);
   cursor: default;
+  border: none;
+}
+
+.trust-note {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 0;
+  font-style: italic;
 }
 
 @media (prefers-reduced-motion: reduce) {

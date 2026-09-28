@@ -4,29 +4,30 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: var(--bg);
-  background-image: radial-gradient(
-      circle at 15% 15%,
-      var(--accent-soft) 0%,
-      transparent 45%
-    ),
-    radial-gradient(circle at 85% 80%, #fdf1e3 0%, transparent 45%);
+  background: #F9F7F2;
+  background-image: linear-gradient(
+      135deg,
+      #F9F7F2 0%,
+      #F2EFE9 100%
+    );
 }
 
 .auth-box {
   background: var(--surface);
-  padding: 40px;
-  border: 2px solid #222;
+  padding: 48px 40px;
+  border: 1px solid #E0DED8;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
   width: 100%;
   max-width: 400px;
 }
 
 .auth-box h1 {
-  font-size: 30px;
-  margin: 0 0 6px 0;
-  font-weight: 700;
+  font-size: 32px;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #2C2C2C;
 }
 
 .tagline {

@@ -79,7 +79,7 @@
 .listings-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 22px;
+  gap: 32px;
 }
 
 .browse-section > p {
