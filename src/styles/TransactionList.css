@@ -1,0 +1,68 @@
+.seller-transactions {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.seller-transactions h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: #fff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+}
+
+.tx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tx-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border-left: 4px solid #ffca28;
+}
+
+.tx-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tx-info strong {
+  color: #fff;
+  font-size: 1rem;
+}
+
+.tx-info span {
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+.tx-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tx-actions button {
+  padding: 0.5rem 0.8rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: #ffca28;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.tx-actions button:hover {
+  background: #ffd54f;
+}

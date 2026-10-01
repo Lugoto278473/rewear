@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import ListingCard from './ListingCard';
 import PostListing from './PostListing';
 import Messages from './Messages';
+import TransactionList from './TransactionList';
 import '../styles/Dashboard.css';
 
 // The browse grid always shows at least this many spots.
@@ -73,11 +74,7 @@ export default function Dashboard({ session, onLogin }) {
     setView('browse');
   };
 
-  const handleInquire = (listing) => {
-    if (!session) {
-      onLogin();
-      return;
-    }
+  const openConversation = (listing) => {
     setDraft({
       listingId: listing.id,
       listingTitle: listing.title,
@@ -85,6 +82,76 @@ export default function Dashboard({ session, onLogin }) {
       otherName: listing.users?.username,
     });
     setView('messages');
+  };
+
+  // Ignores repeat clicks while a purchase or offer is in flight.
+  const busy = useRef(false);
+
+  const handleBuyNow = async (listing) => {
+    if (!session) {
+      onLogin();
+      return;
+    }
+    if (busy.current) return;
+    busy.current = true;
+
+    try {
+      // The server sets the price and seller and reserves the listing.
+      const { error } = await supabase.rpc('buy_listing', { p_listing_id: listing.id });
+      if (error) {
+        console.error('Transaction error:', error);
+        alert(error.message || 'Could not start the purchase. Please try again.');
+        return;
+      }
+      fetchListings();
+      openConversation(listing);
+    } finally {
+      busy.current = false;
+    }
+  };
+
+  const handleMakeOffer = async (listing) => {
+    if (!session) {
+      onLogin();
+      return;
+    }
+    if (busy.current) return;
+
+    const input = prompt(`Make an offer for ${listing.title} (Current price: $${listing.price})`, listing.price);
+    if (input === null) return;
+
+    // Plain dollars and optional cents only, so "1e3" or "0x10" can't sneak in.
+    const text = input.trim().replace(/^\$/, '');
+    const amount = Number(text);
+    if (!/^\d+(\.\d{1,2})?$/.test(text) || amount <= 0) {
+      alert('Please enter a dollar amount, like 25 or 25.50.');
+      return;
+    }
+    if (amount > Number(listing.price)) {
+      alert(`Your offer can't be more than the asking price of $${listing.price}.`);
+      return;
+    }
+
+    busy.current = true;
+    try {
+      const { error } = await supabase.from('offers').insert({
+        listing_id: listing.id,
+        buyer_id: session.user.id,
+        seller_id: listing.seller_id,
+        offer_amount: amount,
+        status: 'pending',
+      });
+
+      if (error) throw error;
+
+      alert(`Offer of $${amount.toFixed(2)} sent to seller!`);
+      openConversation(listing);
+    } catch (err) {
+      console.error('Offer error:', err);
+      alert('Failed to send offer. Please try again.');
+    } finally {
+      busy.current = false;
+    }
   };
 
   return (
@@ -146,7 +213,8 @@ export default function Dashboard({ session, onLogin }) {
                   key={listing.id}
                   listing={listing}
                   isOwn={listing.seller_id === userId}
-                  onInquire={handleInquire}
+                  onBuyNow={handleBuyNow}
+                  onMakeOffer={handleMakeOffer}
                 />
               ))}
               {/* Top up a sparse shop with empty spots that invite selling. */}
@@ -177,6 +245,16 @@ export default function Dashboard({ session, onLogin }) {
             <p>Email: {session.user.email}</p>
             <p>Rating: ⭐ {user.rating || 'No ratings yet'}</p>
             {user.bio && <p>Bio: {user.bio}</p>}
+
+            <div className="seller-transactions">
+              <h3>Your Sales</h3>
+              <TransactionList userId={userId} role="seller" />
+            </div>
+
+            <div className="seller-transactions">
+              <h3>Your Purchases</h3>
+              <TransactionList userId={userId} role="buyer" />
+            </div>
           </div>
         )}
       </main>

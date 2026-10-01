@@ -5,7 +5,7 @@ import '../styles/ListingCard.css';
 const PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Crect width='250' height='250' fill='%23f2f1ee'/%3E%3Ctext x='50%25' y='50%25' fill='%239ca3af' font-family='sans-serif' font-size='13' text-anchor='middle'%3ENo photo%3C/text%3E%3C/svg%3E";
 
-export default function ListingCard({ listing, isOwn, onInquire }) {
+export default function ListingCard({ listing, isOwn, onBuyNow, onMakeOffer }) {
   const image =
     listing.images && listing.images.length > 0
       ? listing.images[0]
@@ -44,10 +44,10 @@ export default function ListingCard({ listing, isOwn, onInquire }) {
           </button>
         ) : (
           <div className="card-actions">
-            <button className="offer-btn" onClick={() => onInquire(listing)}>
+            <button className="offer-btn" onClick={() => onMakeOffer(listing)}>
               Make Offer
             </button>
-            <button className="buy-btn" onClick={() => onInquire(listing)}>
+            <button className="buy-btn" onClick={() => onBuyNow(listing)}>
               Buy Now
             </button>
             <p className="trust-note">Payment held safely until delivery</p>
