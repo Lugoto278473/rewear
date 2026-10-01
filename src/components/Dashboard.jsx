@@ -157,7 +157,11 @@ export default function Dashboard({ session, onLogin }) {
   return (
     <div className="dashboard">
       <header className="header">
-        <h1>ReWear</h1>
+        <h1>
+          <button className="brand" onClick={() => goTo('browse')}>
+            ReWear
+          </button>
+        </h1>
         <div className="header-actions">
           <button
             className={view === 'browse' ? 'active' : ''}

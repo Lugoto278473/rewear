@@ -26,6 +26,17 @@
   line-height: 1.2;
 }
 
+.header h1 .brand {
+  all: unset;
+  cursor: pointer;
+}
+
+.header h1 .brand:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
 .header-actions {
   display: flex;
   align-items: center;
