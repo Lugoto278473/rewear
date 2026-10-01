@@ -8,6 +8,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^13.5.0",
+    "@vercel/analytics": "^2.0.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-scripts": "5.0.1",
