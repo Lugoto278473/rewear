@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { supabase, isDemo } from '../supabaseClient';
 import Auth from './Auth';
 import Dashboard from './Dashboard';
@@ -66,6 +67,7 @@ function App() {
         </p>
       </footer>
       {showTerms && <Terms onClose={() => setShowTerms(false)} />}
+      <Analytics />
     </div>
   );
 }

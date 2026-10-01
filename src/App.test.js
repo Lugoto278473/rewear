@@ -1,5 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { createMockClient } from './mockClient';
+
+// Mock @vercel/analytics before importing App
+jest.mock('@vercel/analytics/react', () => ({
+  Analytics: () => null,
+}), { virtual: true });
+
 import App from './components/App';
 
 // No credentials in the test env, so exercise the demo path end to end.
