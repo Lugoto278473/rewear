@@ -68,6 +68,20 @@
   box-shadow: var(--shadow-sm);
 }
 
+.header-actions .unread-badge {
+  display: inline-block;
+  min-width: 18px;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
 .header-actions .signout-btn {
   margin-left: 4px;
   color: var(--text-faint);

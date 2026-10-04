@@ -30,6 +30,10 @@
   border-left: 4px solid #ffca28;
 }
 
+.tx-item.tx-done {
+  border-left-color: #2e9e6a;
+}
+
 .tx-info {
   display: flex;
   flex-direction: column;

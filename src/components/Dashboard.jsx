@@ -60,6 +60,100 @@ export default function Dashboard({ session, onLogin }) {
     fetchUser();
   }, [fetchListings, fetchUser]);
 
+  // Unread messages: the browser remembers the newest message you've seen
+  // (by server timestamp, so clock skew doesn't matter) and counts newer ones.
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    if (!userId) {
+      setUnread(0);
+      return;
+    }
+    const seenKey = `rewear:messagesSeen:${userId}`;
+
+    const check = async () => {
+      if (view === 'messages') {
+        const { data, error } = await supabase
+          .from('messages')
+          .select('created_at')
+          .eq('recipient_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (!error && data[0]) localStorage.setItem(seenKey, data[0].created_at);
+        setUnread(0);
+        return;
+      }
+      let query = supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('recipient_id', userId);
+      const seen = localStorage.getItem(seenKey);
+      if (seen) query = query.gt('created_at', seen);
+      const { count, error } = await query;
+      if (!error) setUnread(count ?? 0);
+    };
+
+    check();
+    const id = setInterval(check, 15000);
+    return () => clearInterval(id);
+  }, [userId, view]);
+
+  // Profile badge. Sales waiting on you (as seller: accept or ship; as
+  // buyer: confirm delivery) drop as soon as you act. Sales a buyer has
+  // confirmed delivered count until you next open your profile, tracked like
+  // unread messages.
+  const [toDo, setToDo] = useState(0);
+
+  useEffect(() => {
+    if (!userId) {
+      setToDo(0);
+      return;
+    }
+    const seenKey = `rewear:deliveriesSeen:${userId}`;
+
+    const check = async () => {
+      const waiting = await supabase
+        .from('transactions')
+        .select('id', { count: 'exact', head: true })
+        .or(
+          `and(seller_id.eq.${userId},status.in.(pending,accepted)),` +
+            `and(buyer_id.eq.${userId},status.eq.shipped)`
+        );
+
+      let delivered = 0;
+      if (view === 'profile') {
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('updated_at')
+          .eq('seller_id', userId)
+          .eq('status', 'completed')
+          .order('updated_at', { ascending: false })
+          .limit(1);
+        if (!error && data[0]) localStorage.setItem(seenKey, data[0].updated_at);
+      } else {
+        let query = supabase
+          .from('transactions')
+          .select('id', { count: 'exact', head: true })
+          .eq('seller_id', userId)
+          .eq('status', 'completed');
+        const seen = localStorage.getItem(seenKey);
+        if (seen) query = query.gt('updated_at', seen);
+        const { count, error } = await query;
+        if (!error) delivered = count ?? 0;
+      }
+
+      if (!waiting.error) setToDo((waiting.count ?? 0) + delivered);
+    };
+    check();
+    const id = setInterval(check, 15000);
+    return () => clearInterval(id);
+  }, [userId, view]);
+
+  useEffect(() => {
+    const total = unread + toDo;
+    document.title = total > 0 ? `(${total}) ReWear` : 'ReWear';
+  }, [unread, toDo]);
+
   // Visitors can browse freely; selling and messaging need an account.
   const goTo = (next) => {
     if (next !== 'browse' && !session) {
@@ -183,6 +277,11 @@ export default function Dashboard({ session, onLogin }) {
             }}
           >
             Messages
+            {unread > 0 && (
+              <span className="unread-badge" aria-label={`${unread} unread`}>
+                {unread > 9 ? '9+' : unread}
+              </span>
+            )}
           </button>
           {session ? (
             <>
@@ -191,6 +290,11 @@ export default function Dashboard({ session, onLogin }) {
                 onClick={() => goTo('profile')}
               >
                 Profile
+                {toDo > 0 && (
+                  <span className="unread-badge" aria-label={`${toDo} sale updates`}>
+                    {toDo > 9 ? '9+' : toDo}
+                  </span>
+                )}
               </button>
               <button onClick={handleSignOut} className="signout-btn">
                 Sign Out

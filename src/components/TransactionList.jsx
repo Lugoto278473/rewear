@@ -23,6 +23,11 @@ const STATUS_LABELS = {
   shipped: 'Shipped',
 };
 
+const DONE_LABELS = {
+  seller: 'Delivered: buyer confirmed',
+  buyer: 'Delivered',
+};
+
 export default function TransactionList({ userId, role }) {
   const [txs, setTxs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +39,7 @@ export default function TransactionList({ userId, role }) {
         .from('transactions')
         .select('*, listings(title, price)')
         .eq(role === 'buyer' ? 'buyer_id' : 'seller_id', userId)
-        .not('status', 'in', '(completed,declined)')
+        .neq('status', 'declined')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -67,16 +72,21 @@ export default function TransactionList({ userId, role }) {
 
   if (loading) return <p>Loading...</p>;
   if (txs.length === 0) {
-    return <p>{role === 'buyer' ? 'No open purchases.' : 'No pending sales.'}</p>;
+    return <p>{role === 'buyer' ? 'No purchases yet.' : 'No sales yet.'}</p>;
   }
 
   return (
     <div className="tx-list">
       {txs.map((tx) => (
-        <div key={tx.id} className="tx-item">
+        <div key={tx.id} className={`tx-item${tx.status === 'completed' ? ' tx-done' : ''}`}>
           <div className="tx-info">
             <strong>{tx.listings?.title}</strong>
-            <span>${tx.amount} — {STATUS_LABELS[tx.status] || tx.status}</span>
+            <span>
+              ${tx.amount} —{' '}
+              {tx.status === 'completed'
+                ? `${DONE_LABELS[role]} on ${new Date(tx.updated_at).toLocaleDateString()}`
+                : STATUS_LABELS[tx.status] || tx.status}
+            </span>
           </div>
           <div className="tx-actions">
             {(ACTIONS[role]?.[tx.status] || []).map((action) => (
