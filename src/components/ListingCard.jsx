@@ -50,7 +50,7 @@ export default function ListingCard({ listing, isOwn, onBuyNow, onMakeOffer }) {
             <button className="buy-btn" onClick={() => onBuyNow(listing)}>
               Buy Now
             </button>
-            <p className="trust-note">Payment held safely until delivery</p>
+            <p className="trust-note">Pay the seller directly — online payments coming soon</p>
           </div>
         )}
       </div>
