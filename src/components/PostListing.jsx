@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { MAX_PHOTOS, uploadListingPhotos } from '../photos';
+import { DEFAULT_LOCATION, round2 } from '../location';
 import '../styles/PostListing.css';
 
 export default function PostListing({ onListingCreated }) {
@@ -15,6 +16,31 @@ export default function PostListing({ onListingCreated }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [photos, setPhotos] = useState([]); // { file, preview }
+  const [location, setLocation] = useState(DEFAULT_LOCATION);
+  const [locating, setLocating] = useState(false);
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      setError('Location is not supported on this device.');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setLocation({
+          lat: round2(coords.latitude),
+          lng: round2(coords.longitude),
+          label: 'Your current area',
+        });
+        setLocating(false);
+      },
+      () => {
+        setError('Could not get your location. Using the Calexico area instead.');
+        setLocating(false);
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+    );
+  };
 
   // Object URLs hold the file in memory until revoked. The ref lets the
   // unmount cleanup see the latest list.
@@ -72,6 +98,8 @@ export default function PostListing({ onListingCreated }) {
         price: parseFloat(formData.price),
         condition: formData.condition,
         images,
+        lat: location.lat,
+        lng: location.lng,
         status: 'active',
       });
 
@@ -186,7 +214,14 @@ export default function PostListing({ onListingCreated }) {
           required
         />
 
-        <button type="submit" disabled={loading}>
+        <div className="location-picker">
+          <span>📍 {location.label}</span>
+          <button type="button" onClick={detectLocation} disabled={locating}>
+            {locating ? 'Locating...' : 'Use my location'}
+          </button>
+        </div>
+
+        <button type="submit" disabled={loading || locating}>
           {loading
             ? photos.length
               ? 'Uploading photos...'

@@ -170,3 +170,19 @@
 .post-listing-section .error {
   margin: 0 0 14px 0;
 }
+
+.location-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.location-picker button {
+  padding: 6px 12px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid currentColor;
+  background: transparent;
+  cursor: pointer;
+}

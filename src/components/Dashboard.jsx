@@ -4,6 +4,7 @@ import ListingCard from './ListingCard';
 import PostListing from './PostListing';
 import Messages from './Messages';
 import TransactionList from './TransactionList';
+import { DEFAULT_LOCATION, round2 } from '../location';
 import '../styles/Dashboard.css';
 
 // The browse grid always shows at least this many spots.
@@ -16,6 +17,25 @@ export default function Dashboard({ session, onLogin }) {
   const [draft, setDraft] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [viewerLocation, setViewerLocation] = useState(DEFAULT_LOCATION);
+
+  // Use the browser's location only if already granted; browsing shouldn't
+  // trigger a permission prompt. Otherwise distances are from the launch area.
+  useEffect(() => {
+    if (!navigator.geolocation || !navigator.permissions) return;
+    navigator.permissions
+      .query({ name: 'geolocation' })
+      .then(({ state }) => {
+        if (state !== 'granted') return;
+        navigator.geolocation.getCurrentPosition(
+          ({ coords }) =>
+            setViewerLocation({ lat: round2(coords.latitude), lng: round2(coords.longitude) }),
+          () => {},
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+        );
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchListings = useCallback(async () => {
     try {
@@ -321,6 +341,7 @@ export default function Dashboard({ session, onLogin }) {
                   key={listing.id}
                   listing={listing}
                   isOwn={listing.seller_id === userId}
+                  viewerLocation={viewerLocation}
                   onBuyNow={handleBuyNow}
                   onMakeOffer={handleMakeOffer}
                 />
