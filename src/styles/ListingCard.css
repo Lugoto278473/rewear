@@ -119,6 +119,29 @@
   gap: 8px;
 }
 
+.delete-btn {
+  width: 100%;
+  padding: 9px;
+  background: var(--danger-soft, #fdecea);
+  color: var(--danger, #c0392b);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
+  color: #ffffff;
+  border-color: #c0392b;
+}
+
 .offer-btn, .buy-btn {
   flex: 1;
   padding: 9px;
@@ -179,4 +202,24 @@
   .listing-card:hover .listing-image img {
     transform: none;
   }
+}
+
+.listing-image video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+
+.video-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 12px;
+  pointer-events: none;
 }

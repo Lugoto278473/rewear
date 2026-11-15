@@ -6,7 +6,7 @@ import '../styles/ListingCard.css';
 const PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Crect width='250' height='250' fill='%23f2f1ee'/%3E%3Ctext x='50%25' y='50%25' fill='%239ca3af' font-family='sans-serif' font-size='13' text-anchor='middle'%3ENo photo%3C/text%3E%3C/svg%3E";
 
-export default function ListingCard({ listing, isOwn, viewerLocation, onBuyNow, onMakeOffer }) {
+export default function ListingCard({ listing, isOwn, viewerLocation, onBuyNow, onMakeOffer, onDelete }) {
   const image =
     listing.images && listing.images.length > 0
       ? listing.images[0]
@@ -23,14 +23,36 @@ export default function ListingCard({ listing, isOwn, viewerLocation, onBuyNow, 
   return (
     <div className="listing-card">
       <div className="listing-image">
-        <img
-          src={image}
-          alt={listing.title}
-          loading="lazy"
-          onError={(e) => {
-            e.currentTarget.src = PLACEHOLDER;
-          }}
-        />
+        {listing.video_url ? (
+          // Muted + playsInline is what lets mobile browsers play without a
+          // tap. Plays on hover/tap, shows the cover photo until then.
+          <video
+            src={listing.video_url}
+            poster={listing.images?.[0]}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label={`Video of ${listing.title}`}
+            onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+            onMouseLeave={(e) => e.currentTarget.pause()}
+            onClick={(e) => {
+              const v = e.currentTarget;
+              if (v.paused) v.play().catch(() => {});
+              else v.pause();
+            }}
+          />
+        ) : (
+          <img
+            src={image}
+            alt={listing.title}
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = PLACEHOLDER;
+            }}
+          />
+        )}
+        {listing.video_url && <span className="video-badge">▶ Video</span>}
         <span className="condition">{listing.condition}</span>
       </div>
       <div className="listing-info">
@@ -49,9 +71,15 @@ export default function ListingCard({ listing, isOwn, viewerLocation, onBuyNow, 
           {distance && <span className="distance">📍 {distance}</span>}
         </div>
         {isOwn ? (
-          <button className="offer-btn disabled" disabled>
-            Your listing
-          </button>
+          <div className="card-actions own-actions">
+            <button
+              className="delete-btn"
+              onClick={() => onDelete && onDelete(listing.id)}
+              title="Delete this listing permanently"
+            >
+              🗑️ Delete Listing
+            </button>
+          </div>
         ) : (
           <div className="card-actions">
             <button className="offer-btn" onClick={() => onMakeOffer(listing)}>
@@ -60,7 +88,7 @@ export default function ListingCard({ listing, isOwn, viewerLocation, onBuyNow, 
             <button className="buy-btn" onClick={() => onBuyNow(listing)}>
               Buy Now
             </button>
-            <p className="trust-note">Pay the seller directly — online payments coming soon</p>
+            <p className="trust-note">🛡️ Safe Trade Protected · 0% Seller Fee</p>
           </div>
         )}
       </div>

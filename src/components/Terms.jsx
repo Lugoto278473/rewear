@@ -11,7 +11,7 @@ export default function Terms({ onClose }) {
           ×
         </button>
         <h2>Terms and Services</h2>
-        <p className="terms-updated">Last updated: September 2026</p>
+        <p className="terms-updated">Last updated: November 2026</p>
 
         <h3>1. Using ReWear</h3>
         <p>

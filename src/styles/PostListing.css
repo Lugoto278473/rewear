@@ -186,3 +186,37 @@
   background: transparent;
   cursor: pointer;
 }
+
+.video-picker {
+  display: flex;
+}
+
+.video-add {
+  width: 100%;
+}
+
+.video-thumb {
+  position: relative;
+  width: 100%;
+}
+
+.video-thumb video {
+  width: 100%;
+  max-height: 320px;
+  border-radius: 12px;
+  background: #000;
+  display: block;
+}
+
+.video-thumb button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  cursor: pointer;
+}

@@ -1,72 +1,246 @@
-.seller-transactions {
-  margin-top: 2rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.seller-transactions h3 {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 0.5rem;
-}
-
 .tx-list {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.tx-loading,
+.tx-empty {
+  color: var(--text-muted, #888);
+  font-size: 14px;
+  padding: 12px 0;
 }
 
 .tx-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  border-left: 4px solid #ffca28;
+  align-items: flex-start;
+  padding: 16px;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: var(--radius-md, 8px);
+  border-left: 4px solid #f59e0b;
+  gap: 16px;
+  transition: all 0.2s ease;
 }
 
 .tx-item.tx-done {
-  border-left-color: #2e9e6a;
+  border-left-color: #10b981;
 }
 
 .tx-info {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 6px;
+  flex: 1;
 }
 
-.tx-info strong {
-  color: #fff;
-  font-size: 1rem;
+.tx-title {
+  color: var(--text-primary, #111);
+  font-size: 15px;
+  font-weight: 600;
 }
 
-.tx-info span {
-  color: #aaa;
-  font-size: 0.85rem;
+.tx-price-breakdown {
+  font-size: 13px;
+  color: var(--text-muted, #666);
+}
+
+.tx-price-breakdown strong {
+  color: var(--text-primary, #111);
+}
+
+.tx-status {
+  font-size: 13px;
+  color: var(--text-muted, #777);
+}
+
+.tx-tracking {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.usps-link {
+  color: var(--accent, #0f7a5a);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.usps-link:hover {
+  opacity: 0.8;
+}
+
+.tx-reviewed-badge {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  font-size: 12.5px;
+  color: #065f46;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tx-reviewed-comment {
+  font-style: italic;
+  color: #047857;
 }
 
 .tx-actions {
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
 }
 
-.tx-actions button {
-  padding: 0.5rem 0.8rem;
-  font-size: 0.8rem;
+.tx-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  background: #ffca28;
-  color: #000;
+  background: var(--accent, #0f7a5a);
+  color: #ffffff;
   border: none;
-  border-radius: 4px;
-  font-weight: bold;
-  transition: background 0.2s;
+  border-radius: var(--radius-sm, 6px);
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
 }
 
-.tx-actions button:hover {
-  background: #ffd54f;
+.tx-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.tx-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.review-btn {
+  background: #f59e0b;
+  color: #111;
+}
+
+.review-btn:hover:not(:disabled) {
+  background: #d97706;
+  color: #fff;
+}
+
+/* Modals */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-card {
+  background: #ffffff;
+  color: #111111;
+  border-radius: 12px;
+  max-width: 440px;
+  width: 100%;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.modal-card p {
+  margin: 0 0 16px 0;
+  font-size: 13.5px;
+  color: #555;
+  line-height: 1.4;
+}
+
+.modal-card input[type="text"],
+.modal-card textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 14px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.modal-card textarea {
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-actions .cancel-btn {
+  padding: 8px 14px;
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-actions .confirm-btn {
+  padding: 8px 16px;
+  background: var(--accent, #0f7a5a);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Star Rating Selector */
+.star-rating-select {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 26px;
+  cursor: pointer;
+  color: #d1d5db;
+  padding: 0 2px;
+  transition: transform 0.1s, color 0.15s;
+}
+
+.star-btn.active {
+  color: #f59e0b;
+}
+
+.star-btn:hover {
+  transform: scale(1.15);
+}
+
+.star-text {
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
 }

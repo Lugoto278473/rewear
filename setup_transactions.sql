@@ -82,7 +82,11 @@ $$;
 
 -- Move a sale one step. The seller accepts/declines and ships; only the
 -- buyer can confirm delivery and complete it.
-create or replace function public.advance_transaction(p_id uuid, p_status text)
+create or replace function public.advance_transaction(
+  p_id uuid,
+  p_status text,
+  p_tracking_number text default null
+)
 returns public.transactions
 language plpgsql
 security definer
@@ -106,6 +110,7 @@ begin
 
   update public.transactions
   set status = p_status,
+      tracking_number = coalesce(p_tracking_number, tracking_number),
       signature_confirmed = (p_status = 'completed'),
       updated_at = now()
   where id = p_id
@@ -123,9 +128,9 @@ end;
 $$;
 
 revoke execute on function public.buy_listing(uuid) from public, anon;
-revoke execute on function public.advance_transaction(uuid, text) from public, anon;
+revoke execute on function public.advance_transaction(uuid, text, text) from public, anon;
 grant execute on function public.buy_listing(uuid) to authenticated;
-grant execute on function public.advance_transaction(uuid, text) to authenticated;
+grant execute on function public.advance_transaction(uuid, text, text) to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Offers

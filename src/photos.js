@@ -32,6 +32,49 @@ export async function compressImage(file, maxEdge = MAX_EDGE, quality = 0.82) {
   );
 }
 
+export const VIDEO_BUCKET = 'listing-videos';
+export const MAX_VIDEO_SECONDS = 60;
+export const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const VIDEO_TYPES = { 'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm' };
+
+/** Rejects with a friendly message if the video is the wrong type, too big, or too long. */
+export function checkVideo(file) {
+  if (!VIDEO_TYPES[file.type]) {
+    return Promise.reject(new Error('Please pick an MP4, MOV, or WebM video.'));
+  }
+  if (file.size > MAX_VIDEO_BYTES) {
+    return Promise.reject(new Error('That video is over 50 MB. Try a shorter clip.'));
+  }
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const probe = document.createElement('video');
+    probe.preload = 'metadata';
+    probe.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      if (probe.duration > MAX_VIDEO_SECONDS + 0.5) {
+        reject(new Error(`Videos can be up to ${MAX_VIDEO_SECONDS} seconds.`));
+      } else {
+        resolve();
+      }
+    };
+    // Some browsers can't read .mov metadata; let the upload decide.
+    probe.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve();
+    };
+    probe.src = url;
+  });
+}
+
+/** Uploads to `<userId>/…` and returns the public URL. */
+export async function uploadListingVideo(userId, file) {
+  const path = `${userId}/${Date.now()}.${VIDEO_TYPES[file.type]}`;
+  const bucket = supabase.storage.from(VIDEO_BUCKET);
+  const { error } = await bucket.upload(path, file, { contentType: file.type });
+  if (error) throw error;
+  return bucket.getPublicUrl(path).data.publicUrl;
+}
+
 /** Uploads to `<userId>/…` (the storage policy requires it) and returns public URLs in order. */
 export function uploadListingPhotos(userId, files) {
   const stamp = Date.now();

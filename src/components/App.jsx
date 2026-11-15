@@ -13,6 +13,8 @@ function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
 
+  const [isRecovery, setIsRecovery] = useState(false);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -21,14 +23,18 @@ function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      // Close the log-in popup once someone signs in.
-      if (session) setShowAuth(false);
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecovery(true);
+        setShowAuth(true);
+      } else if (session && !isRecovery) {
+        setShowAuth(false);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isRecovery]);
 
   if (showSetup) return <SetupNotice onDismiss={() => setShowSetup(false)} />;
   if (loading) return <div className="loading">Loading ReWear</div>;
@@ -47,10 +53,18 @@ function App() {
         </div>
       )}
       <Dashboard session={session} onLogin={() => setShowAuth(true)} />
-      {showAuth && !session && (
+      {showAuth && (!session || isRecovery) && (
         <Auth
-          onClose={() => setShowAuth(false)}
+          onClose={() => {
+            setShowAuth(false);
+            setIsRecovery(false);
+          }}
           onShowTerms={() => setShowTerms(true)}
+          isRecovery={isRecovery}
+          onRecoveryComplete={() => {
+            setIsRecovery(false);
+            setShowAuth(false);
+          }}
         />
       )}
       <footer className="site-footer">

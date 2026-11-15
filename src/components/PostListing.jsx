@@ -1,6 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { MAX_PHOTOS, uploadListingPhotos } from '../photos';
+import {
+  MAX_PHOTOS,
+  MAX_VIDEO_SECONDS,
+  checkVideo,
+  uploadListingPhotos,
+  uploadListingVideo,
+} from '../photos';
 import { DEFAULT_LOCATION, round2 } from '../location';
 import '../styles/PostListing.css';
 
@@ -44,12 +50,38 @@ export default function PostListing({ onListingCreated }) {
 
   // Object URLs hold the file in memory until revoked. The ref lets the
   // unmount cleanup see the latest list.
+  const [video, setVideo] = useState(null); // { file, preview }
+
   const photosRef = useRef(photos);
   photosRef.current = photos;
+  const videoRef = useRef(video);
+  videoRef.current = video;
   useEffect(
-    () => () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.preview)),
+    () => () => {
+      photosRef.current.forEach((p) => URL.revokeObjectURL(p.preview));
+      if (videoRef.current) URL.revokeObjectURL(videoRef.current.preview);
+    },
     []
   );
+
+  const handleVideo = async (e) => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    setError('');
+    try {
+      await checkVideo(file);
+      if (video) URL.revokeObjectURL(video.preview);
+      setVideo({ file, preview: URL.createObjectURL(file) });
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const removeVideo = () => {
+    URL.revokeObjectURL(video.preview);
+    setVideo(null);
+  };
 
   const handlePhotos = (e) => {
     const picked = Array.from(e.target.files).filter((f) =>
@@ -86,9 +118,10 @@ export default function PostListing({ onListingCreated }) {
     try {
       const user = (await supabase.auth.getUser()).data.user;
 
-      const images = photos.length
-        ? await uploadListingPhotos(user.id, photos.map((p) => p.file))
-        : null;
+      const [images, videoUrl] = await Promise.all([
+        photos.length ? uploadListingPhotos(user.id, photos.map((p) => p.file)) : null,
+        video ? uploadListingVideo(user.id, video.file) : null,
+      ]);
 
       const { error: insertError } = await supabase.from('listings').insert({
         seller_id: user.id,
@@ -98,6 +131,9 @@ export default function PostListing({ onListingCreated }) {
         price: parseFloat(formData.price),
         condition: formData.condition,
         images,
+        // Only sent when present, so photo-only posts work even before
+        // migration 005 adds the column.
+        ...(videoUrl && { video_url: videoUrl }),
         lat: location.lat,
         lng: location.lng,
         status: 'active',
@@ -115,6 +151,8 @@ export default function PostListing({ onListingCreated }) {
       });
       photos.forEach((p) => URL.revokeObjectURL(p.preview));
       setPhotos([]);
+      if (video) URL.revokeObjectURL(video.preview);
+      setVideo(null);
 
       setTimeout(() => setSuccess(false), 3000);
       onListingCreated();
@@ -159,6 +197,27 @@ export default function PostListing({ onListingCreated }) {
               <small>
                 {photos.length}/{MAX_PHOTOS}
               </small>
+            </label>
+          )}
+        </div>
+
+        <div className="video-picker">
+          {video ? (
+            <div className="video-thumb">
+              <video src={video.preview} controls muted playsInline />
+              <button type="button" onClick={removeVideo} aria-label="Remove video">
+                ×
+              </button>
+            </div>
+          ) : (
+            <label className="photo-add video-add">
+              <input
+                type="file"
+                accept="video/mp4,video/quicktime,video/webm"
+                onChange={handleVideo}
+              />
+              <span>🎥 Add a video</span>
+              <small>Show it off, up to {MAX_VIDEO_SECONDS}s</small>
             </label>
           )}
         </div>
@@ -223,7 +282,9 @@ export default function PostListing({ onListingCreated }) {
 
         <button type="submit" disabled={loading || locating}>
           {loading
-            ? photos.length
+            ? video
+              ? 'Uploading video...'
+              : photos.length
               ? 'Uploading photos...'
               : 'Posting...'
             : 'Post Item'}

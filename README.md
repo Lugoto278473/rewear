@@ -1,83 +1,84 @@
 # ReWear
 
-Buy & sell secondhand. Any age. Fresh finds.
+**Buy & sell secondhand. Any age. Fresh finds.**
 
-A React + Supabase marketplace: email/password auth, browse active listings, post
-your own items, and a basic profile view.
+**Live demo:** https://rewear-cupm.vercel.app
 
-## Running it now (no setup)
+ReWear is a secondhand clothing marketplace built with React and Supabase. Users can sign up, list items with photos and videos, browse what others are selling, message sellers, and buy through a "Safe Trade" escrow flow that tracks every sale from offer to delivery.
 
-```
+## Key Features
+
+- **0% Seller Commission:** Sellers keep 100% of their sale price (no 10% or 20% platform cut).
+- **Safe Trade Escrow Protection:** 
+  - Each sale moves through `pending → accepted → shipped → completed`.
+  - Transparent buyer fee (4% + $0.50) that covers platform maintenance, escrow protection, and card processing.
+  - Only the seller can accept and ship; only the buyer can confirm delivery upon receipt.
+- **Postal Tracking with Live USPS Link:**
+  - Sellers enter their carrier tracking number when marking an order as shipped.
+  - Buyers can track their incoming package on USPS with a single click.
+- **Verified Reviews:**
+  - Rating (1–5 stars) and feedback are purchase-gated — unlocked strictly after delivery is confirmed.
+  - A database trigger recalculates the seller's verified rating average (`★ 4.9`) on the fly.
+- **Media Presentation (Photos & Video):**
+  - Up to 4 photos resized to JPEG in the browser.
+  - Up to 60-second video clips for showing off garments.
+  - TikTok-style fullscreen swipe Feed mixing photo and video listings.
+- **Search & Category Filters:**
+  - Quick chips for Vintage & Tees, Workwear & Jackets, Denim & Jeans, Kicks & Shoes, Jerseys & Sports, Caps & Gear.
+  - Live search by title, seller, brand, or description.
+- **Security & RLS:**
+  - Email/password authentication with password recovery.
+  - Row-Level Security on all tables and storage buckets.
+  - Server-side functions and triggers prevent client tampering.
+- **Demo Mode:**
+  - Full local fallback client (`src/mockClient.js`) that persists in `localStorage` when run without backend credentials.
+
+## Tech Stack
+
+| Layer      | Technology                                              |
+| ---------- | ------------------------------------------------------- |
+| Frontend   | React 19 (Create React App), plain CSS with design tokens |
+| Backend    | Supabase (Postgres, Auth, Storage, Edge Functions)      |
+| Security   | Row-Level Security (RLS), Postgres Functions & Triggers |
+| Hosting    | Vercel, with Vercel Web Analytics                       |
+
+## Running Locally
+
+```bash
 npm install
 npm start
 ```
 
-With no credentials configured the app runs in **demo mode**: a stand-in client
-(`src/mockClient.js`) serves seeded listings from `localStorage`, so you can
-browse, sign up, and post immediately. A banner marks it, and nothing leaves the
-browser. Add real credentials (below) and the app switches to Supabase
-automatically — no code change.
+Runs at `http://localhost:3000`. With no credentials configured, the app runs in **demo mode**: `src/mockClient.js` serves seeded listings from `localStorage`.
 
-## Setup (going live on Supabase)
+### Connecting to Supabase
 
-1. **Create the database.** In your Supabase project, open the SQL editor and run
-   [`supabase/schema.sql`](supabase/schema.sql). It creates the `users` and
-   `listings` tables plus row-level security policies.
+In the Supabase SQL editor, run the migrations in order:
+1. `supabase/schema.sql` (Users and listings)
+2. `supabase/002_photos_and_messages.sql` (Storage bucket & messaging)
+3. `setup_transactions.sql` (Safe Trade escrow functions & offers)
+4. `supabase/004_lock_down_profiles_and_listings.sql` (Security lockdown)
+5. `supabase/005_listing_videos.sql` (Video upload storage bucket)
+6. `supabase/006_verified_reviews.sql` (Verified reviews & rating trigger)
 
-2. **Add your credentials.** Copy `.env.example` to `.env` and fill in the values
-   from Supabase → Project Settings → API:
-
-   ```
-   REACT_APP_SUPABASE_URL=https://your-project-ref.supabase.co
-   REACT_APP_SUPABASE_KEY=your-anon-public-key
-   ```
-
-   Use the **anon public** key, not the service role key. `.env` is gitignored.
-   Restart the dev server after changing it — CRA only reads env vars at startup.
-
-3. **Restart the dev server.** CRA only reads env vars at boot, so hot reload
-   won't pick them up. The demo banner disappears once it's connected.
-
-## Scripts
-
-| Command         | What it does                              |
-| --------------- | ----------------------------------------- |
-| `npm start`     | Dev server with hot reload                |
-| `npm test`      | Test runner in watch mode                 |
-| `npm run build` | Optimized production build to `build/`    |
-
-## Structure
-
-```
-src/
-  index.js              entry point, renders <App>
-  index.css             design tokens (colors, radii, shadows) + base styles
-  supabaseClient.js     real client, or the mock when unconfigured
-  mockClient.js         localStorage stand-in used in demo mode
-  components/
-    App.jsx             session state; routes to Auth or Dashboard
-    SetupNotice.jsx     instructions for connecting Supabase
-    Auth.jsx            sign in / sign up
-    Dashboard.jsx       shell with Browse / Post / Profile views
-    ListingCard.jsx     single listing tile
-    PostListing.jsx     new listing form
-  styles/               one stylesheet per component
-supabase/schema.sql     tables, indexes, RLS policies
+Add your credentials to `.env`:
+```env
+REACT_APP_SUPABASE_URL=https://your-project.supabase.co
+REACT_APP_SUPABASE_KEY=your-anon-public-key
 ```
 
-Theming lives in the `:root` block of `src/index.css` — change `--accent` there
-and the whole app follows.
+## Running Unit Tests
 
-## Notes
+```bash
+npm test -- --watchAll=false
+```
 
-- Profile rows are created server-side by the `on_auth_user_created` trigger in
-  `supabase/schema.sql`, which reads the username from the sign-up metadata. The
-  client never inserts into `users` — at sign-up there's no session yet, so RLS
-  would reject it.
-- Sign-up requires email confirmation by default. Turn that off in Supabase →
-  Authentication → Providers → Email if you want instant logins while developing.
-- After `schema.sql`, also run `supabase/002_photos_and_messages.sql`. It adds
-  the `listing-images` storage bucket and the `messages` table.
-- Photos (up to 4) are resized to JPEG in the browser, then uploaded.
-- "Inquire" opens a thread in the Messages tab. New messages are polled every
-  15s; there's no realtime yet.
+Tests cover:
+- Demo mode fallback
+- Safe Trade fee calculations (4% + $0.50)
+- Listing joins and ordering
+- Sign-up and profile creation
+- Private messaging isolation & spoof prevention
+- Safe Trade lifecycle with postal tracking
+- Verified Reviews submission and rating updates
+- Deleting listings
