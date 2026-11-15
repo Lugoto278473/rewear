@@ -188,6 +188,37 @@ describe('mock client', () => {
     expect(revs[0].rating).toBe(5);
   });
 
+  test('seller accepting an offer reserves the listing and opens a sale', async () => {
+    const client = createMockClient();
+
+    await client.auth.signUp({ email: 'buyer@example.com', password: 'pw' });
+    const { data: buyer } = await client.auth.getUser();
+    const { data: inserted } = await client.from('offers').insert({
+      listing_id: 'seed-1',
+      buyer_id: buyer.user.id,
+      seller_id: 'seed-ada',
+      offer_amount: 50,
+      status: 'pending',
+    });
+
+    await client.auth.signOut();
+    await client.auth.signInWithPassword({ email: 'ada@example.com', password: 'x' });
+
+    const { data: tx, error } = await client.rpc('accept_offer', {
+      p_offer_id: inserted[0].id,
+    });
+    expect(error).toBeNull();
+    expect(tx.status).toBe('accepted');
+    expect(tx.amount).toBe(50);
+
+    const { data: listing } = await client
+      .from('listings')
+      .select('*')
+      .eq('id', 'seed-1')
+      .single();
+    expect(listing.status).toBe('reserved');
+  });
+
   test('supports deleting a listing', async () => {
     const client = createMockClient();
     const { error } = await client.from('listings').delete().eq('id', 'seed-4');

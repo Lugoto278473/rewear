@@ -60,6 +60,8 @@ In the Supabase SQL editor, run the migrations in order:
 4. `supabase/004_lock_down_profiles_and_listings.sql` (Security lockdown)
 5. `supabase/005_listing_videos.sql` (Video upload storage bucket)
 6. `supabase/006_verified_reviews.sql` (Verified reviews & rating trigger)
+7. `supabase/007_offers_and_messages_cleanup.sql` (Offer accept/decline & chat deletion)
+8. `supabase/008_messages_realtime.sql` (Instant message delivery)
 
 Add your credentials to `.env`:
 ```env

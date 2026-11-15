@@ -6,7 +6,7 @@ import '../styles/Messages.css';
 const POLL_MS = 15000;
 
 const threadKey = (listingId, otherId) => `${listingId}:${otherId}`;
-const lastAt = (thread) => thread.messages.at(-1)?.created_at ?? '￿'; // empty drafts sort first
+const lastAt = (thread) => thread.messages.at(-1)?.created_at ?? '';
 
 const formatTime = (iso) =>
   new Date(iso).toLocaleString([], {
@@ -32,7 +32,6 @@ export default function Messages({ session, draft }) {
 
   const fetchMessages = useCallback(async () => {
     try {
-      // RLS limits this to conversations you're part of.
       const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -68,6 +67,31 @@ export default function Messages({ session, draft }) {
     const id = setInterval(fetchMessages, POLL_MS);
     return () => clearInterval(id);
   }, [fetchMessages]);
+
+  // If the backend supports Realtime, refresh as soon as a message lands.
+  // The poll above stays as a fallback (and covers demo mode).
+  useEffect(() => {
+    if (typeof supabase.channel !== 'function') return undefined;
+    const channel = supabase
+      .channel(`messages:${me}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'messages' },
+        () => fetchMessages()
+      )
+      .subscribe();
+    return () => {
+      if (typeof supabase.removeChannel === 'function') supabase.removeChannel(channel);
+    };
+  }, [me, fetchMessages]);
+
+  // Opening a conversation from a listing while Messages is already mounted
+  // should switch to that thread instead of showing the previous one.
+  useEffect(() => {
+    if (!draft) return;
+    setActiveKey(threadKey(draft.listingId, draft.otherId));
+    setBody('Hi! Is this still available?');
+  }, [draft]);
 
   const threads = useMemo(() => {
     const map = new Map();
@@ -121,6 +145,51 @@ export default function Messages({ session, draft }) {
     }
   };
 
+  // Delete an individual message
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+        .select();
+      if (error) throw error;
+      if (!data?.length) {
+        throw new Error('The server did not delete it. Run migration 007 in Supabase.');
+      }
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+    } catch (err) {
+      console.error(err);
+      alert('Could not delete message: ' + err.message);
+      fetchMessages();
+    }
+  };
+
+  // Delete entire conversation thread
+  const handleDeleteThread = async (thread) => {
+    if (!window.confirm(`Delete the entire conversation about "${titleOf(thread.listingId)}"?`)) return;
+    try {
+      const idsToDelete = thread.messages.map((m) => m.id);
+      if (idsToDelete.length > 0) {
+        const { data, error } = await supabase
+          .from('messages')
+          .delete()
+          .in('id', idsToDelete)
+          .select();
+        if (error) throw error;
+        if (!data?.length) {
+          throw new Error('The server did not delete them. Run migration 007 in Supabase.');
+        }
+      }
+      setMessages((prev) => prev.filter((m) => !idsToDelete.includes(m.id)));
+      setActiveKey(null);
+    } catch (err) {
+      console.error(err);
+      alert('Could not delete conversation: ' + err.message);
+      fetchMessages();
+    }
+  };
+
   return (
     <div className="messages-section">
       <h2>Messages</h2>
@@ -157,8 +226,18 @@ export default function Messages({ session, draft }) {
 
           <div className="thread">
             <div className="thread-header">
-              <strong>{titleOf(active.listingId)}</strong>
-              <span>with {nameOf(active.otherId)}</span>
+              <div className="thread-header-info">
+                <strong>{titleOf(active.listingId)}</strong>
+                <span>with {nameOf(active.otherId)}</span>
+              </div>
+              <button
+                type="button"
+                className="delete-chat-btn"
+                onClick={() => handleDeleteThread(active)}
+                title="Delete this entire conversation"
+              >
+                🗑️ Delete Chat
+              </button>
             </div>
 
             <div className="thread-messages" ref={listRef}>
@@ -172,7 +251,17 @@ export default function Messages({ session, draft }) {
                     key={m.id}
                     className={`bubble ${m.sender_id === me ? 'mine' : 'theirs'}`}
                   >
-                    <p>{m.body}</p>
+                    <div className="bubble-content">
+                      <p>{m.body}</p>
+                      <button
+                        type="button"
+                        className="msg-delete-btn"
+                        onClick={() => handleDeleteMessage(m.id)}
+                        title="Delete message"
+                      >
+                        ×
+                      </button>
+                    </div>
                     <time dateTime={m.created_at}>{formatTime(m.created_at)}</time>
                   </div>
                 ))

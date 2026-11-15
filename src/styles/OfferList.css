@@ -1,0 +1,121 @@
+.offers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.offers-loading,
+.offers-empty {
+  color: var(--text-muted, #888);
+  font-size: 14px;
+  padding: 10px 0;
+}
+
+.offer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: var(--radius-md, 8px);
+  border-left: 4px solid #3b82f6;
+  gap: 14px;
+}
+
+.offer-item.status-accepted {
+  border-left-color: #10b981;
+}
+
+.offer-item.status-declined {
+  border-left-color: #ef4444;
+  opacity: 0.7;
+}
+
+.offer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.offer-listing-title {
+  color: var(--text-primary, #111);
+  font-size: 15px;
+}
+
+.offer-amount-row {
+  font-size: 13.5px;
+  color: var(--text-muted, #555);
+}
+
+.offer-asking {
+  color: var(--text-faint, #999);
+  font-size: 12px;
+}
+
+.offer-buyer {
+  margin-left: 8px;
+  font-weight: 500;
+  color: var(--accent, #0f7a5a);
+}
+
+.offer-status-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  margin-top: 2px;
+}
+
+.offer-status-badge.accepted {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.offer-status-badge.declined {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.offer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.accept-offer-btn {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  transition: opacity 0.15s ease;
+}
+
+.accept-offer-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.decline-offer-btn {
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-sm, 6px);
+  transition: all 0.15s ease;
+}
+
+.decline-offer-btn:hover:not(:disabled) {
+  background: #ef4444;
+  color: #ffffff;
+}

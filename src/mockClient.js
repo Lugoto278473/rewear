@@ -67,7 +67,11 @@ const SEED = {
 };
 
 function load() {
-  const fresh = { ...SEED, session: null, credentials: {} };
+  // Deep-clone the seed: `buy_listing` mutates listing/transaction objects, so
+  // sharing them would leak state between clients and across "resets".
+  const fresh = JSON.parse(
+    JSON.stringify({ ...SEED, session: null, credentials: {} })
+  );
   try {
     const raw = window.localStorage.getItem(KEY);
     if (raw) return { ...fresh, ...JSON.parse(raw) };
@@ -96,6 +100,44 @@ function save(db) {
 const delay = () => new Promise((r) => setTimeout(r, 80));
 const ok = (data) => ({ data, error: null });
 const fail = (message) => ({ data: null, error: new Error(message) });
+
+// Splits on commas that are not inside parentheses.
+function splitTop(text) {
+  const parts = [];
+  let depth = 0;
+  let current = '';
+  for (const ch of text) {
+    if (ch === '(') depth += 1;
+    if (ch === ')') depth -= 1;
+    if (ch === ',' && depth === 0) {
+      parts.push(current);
+      current = '';
+      continue;
+    }
+    current += ch;
+  }
+  if (current) parts.push(current);
+  return parts;
+}
+
+// Turns `col.eq.value`, `col.neq.value`, `col.in.(a,b)` and `and(...)` into predicates.
+function parseCondition(text) {
+  const trimmed = text.trim();
+  if (trimmed.startsWith('and(') && trimmed.endsWith(')')) {
+    const inner = trimmed.slice(4, -1);
+    return splitTop(inner).map(parseCondition);
+  }
+  const match = trimmed.match(/^([\w.]+)\.(eq|neq|in)\.(.*)$/);
+  if (!match) return null;
+  const [, column, op, raw] = match;
+  const value = raw.replace(/^\(|\)$/g, '');
+  if (op === 'in') {
+    const values = value.split(',').map((v) => v.trim());
+    return (row) => values.includes(String(row[column]));
+  }
+  return (row) =>
+    op === 'eq' ? String(row[column]) === value : String(row[column]) !== value;
+}
 
 export function createMockClient() {
   let db = load();
@@ -133,6 +175,10 @@ export function createMockClient() {
     let embedUsers = false;
     let embedListings = false;
     let mode = 'many'; // 'many' | 'single' | 'maybeSingle' | 'delete'
+    let limitCount = null;
+    let orGroups = [];
+    let wantCount = false;
+    let headOnly = false;
 
     const run = async () => {
       await delay();
@@ -148,6 +194,14 @@ export function createMockClient() {
         rows = rows.filter((m) => m.sender_id === me || m.recipient_id === me);
       }
 
+      // A minimal `or(...)` implementation: each top-level `and(...)` group is
+      // OR'd together, and the conditions inside a group are AND'd.
+      if (orGroups.length) {
+        rows = rows.filter((row) =>
+          orGroups.some((group) => group.every((test) => test(row)))
+        );
+      }
+
       if (order) {
         const [col, asc] = order;
         rows = [...rows].sort((a, b) => {
@@ -157,10 +211,15 @@ export function createMockClient() {
         });
       }
 
+      const count = rows.length;
+      if (limitCount != null) rows = rows.slice(0, limitCount);
+
       if (embedUsers) {
         rows = rows.map((r) => ({
           ...r,
-          users: publicUser(r.seller_id || r.buyer_id || r.user_id),
+          users: publicUser(
+            table === 'offers' ? r.buyer_id : r.seller_id || r.buyer_id || r.user_id
+          ),
         }));
       }
 
@@ -188,13 +247,17 @@ export function createMockClient() {
       if (mode === 'maybeSingle') {
         return ok(rows[0] ?? null);
       }
-      return ok(rows);
+      const result = { data: headOnly ? null : rows, error: null };
+      if (wantCount) result.count = count;
+      return result;
     };
 
     const builder = {
-      select(columns = '*') {
-        embedUsers = columns.includes('users(');
+      select(columns = '*', options = {}) {
+        embedUsers = columns.includes('users');
         embedListings = columns.includes('listings(');
+        if (options.count) wantCount = true;
+        if (options.head) headOnly = true;
         return builder;
       },
       eq(column, value) {
@@ -205,8 +268,23 @@ export function createMockClient() {
         filters.push((row) => row[column] !== value);
         return builder;
       },
+      gt(column, value) {
+        filters.push((row) => row[column] > value);
+        return builder;
+      },
       in(column, values) {
         filters.push((row) => values.includes(row[column]));
+        return builder;
+      },
+      or(expression) {
+        const groups = splitTop(expression).map((group) =>
+          parseCondition(group)
+        );
+        orGroups = groups.filter(Boolean).map((g) => (Array.isArray(g) ? g : [g]));
+        return builder;
+      },
+      limit(n) {
+        limitCount = n;
         return builder;
       },
       order(column, { ascending = true } = {}) {
@@ -305,6 +383,56 @@ export function createMockClient() {
 
       persist();
       return ok(tx);
+    }
+
+    if (name === 'accept_offer') {
+      const { p_offer_id } = params;
+      const offer = db.offers.find((o) => o.id === p_offer_id);
+      if (!offer) return fail('Offer not found.');
+      if (offer.seller_id !== db.session?.user.id) {
+        return fail('You can only accept offers on your own listings.');
+      }
+      if (offer.status !== 'pending') return fail('This offer is no longer pending.');
+
+      const listing = db.listings.find((l) => l.id === offer.listing_id);
+      if (!listing || listing.status !== 'active') {
+        return fail('This item is no longer available.');
+      }
+
+      const tx = {
+        id: `local-tx-${Date.now()}`,
+        listing_id: listing.id,
+        buyer_id: offer.buyer_id,
+        seller_id: offer.seller_id,
+        amount: offer.offer_amount,
+        status: 'accepted',
+        tracking_number: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      listing.status = 'reserved';
+      offer.status = 'accepted';
+      db.offers.forEach((o) => {
+        if (o.listing_id === listing.id && o.id !== offer.id && o.status === 'pending') {
+          o.status = 'declined';
+        }
+      });
+      db.transactions.push(tx);
+      persist();
+      return ok(tx);
+    }
+
+    if (name === 'decline_offer') {
+      const { p_offer_id } = params;
+      const offer = db.offers.find((o) => o.id === p_offer_id);
+      if (!offer) return fail('Offer not found.');
+      if (offer.seller_id !== db.session?.user.id) {
+        return fail('You can only decline offers on your own listings.');
+      }
+      offer.status = 'declined';
+      persist();
+      return ok(offer);
     }
 
     return fail(`Unknown RPC function: ${name}`);
@@ -406,5 +534,11 @@ export function createMockClient() {
     },
   };
 
-  return { auth, from, rpc, storage };
+  // Realtime is a no-op in demo mode; the polling fallback keeps things fresh.
+  const channel = () => {
+    const chain = { on: () => chain, subscribe: () => chain };
+    return chain;
+  };
+
+  return { auth, from, rpc, storage, channel, removeChannel: () => {} };
 }

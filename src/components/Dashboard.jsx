@@ -4,6 +4,7 @@ import ListingCard from './ListingCard';
 import PostListing from './PostListing';
 import Messages from './Messages';
 import TransactionList from './TransactionList';
+import OfferList from './OfferList';
 import Feed from './Feed';
 import { DEFAULT_LOCATION, round2 } from '../location';
 import { calculateBuyerFee, calculateBuyerTotal } from '../fees';
@@ -365,8 +366,18 @@ export default function Dashboard({ session, onLogin }) {
 
       if (error) throw error;
 
-      alert(`Offer of $${amount.toFixed(2)} sent! The seller will review it.`);
+      // Also send chat message so the seller is immediately alerted in Messages!
+      await supabase.from('messages').insert({
+        listing_id: offerListing.id,
+        sender_id: session.user.id,
+        recipient_id: offerListing.seller_id,
+        body: `💸 I sent an offer of $${amount.toFixed(2)} on "${offerListing.title}"! Review it in your Profile.`,
+      });
+
+      const target = offerListing;
       setOfferListing(null);
+      alert(`Offer of $${amount.toFixed(2)} sent! The seller will see it under their Profile Offers and in Messages.`);
+      openConversation(target);
     } catch (err) {
       console.error(err);
       alert('Could not send offer: ' + err.message);
@@ -490,6 +501,7 @@ export default function Dashboard({ session, onLogin }) {
                   viewerLocation={viewerLocation}
                   onBuyNow={handleBuyNow}
                   onMakeOffer={handleMakeOffer}
+                  onMessage={(l) => (session ? openConversation(l) : onLogin())}
                   onDelete={handleDeleteListing}
                 />
               ))}
@@ -568,6 +580,12 @@ export default function Dashboard({ session, onLogin }) {
               )}
             </div>
 
+            {/* Offers Section */}
+            <div className="seller-transactions">
+              <h3>💸 Offers Received</h3>
+              <OfferList userId={userId} role="seller" onOfferAccepted={fetchListings} />
+            </div>
+
             {/* Sales & Purchases */}
             <div className="seller-transactions">
               <h3>Your Sales</h3>
@@ -577,6 +595,11 @@ export default function Dashboard({ session, onLogin }) {
             <div className="seller-transactions">
               <h3>Your Purchases</h3>
               <TransactionList userId={userId} role="buyer" />
+            </div>
+
+            <div className="seller-transactions">
+              <h3>💸 Offers You Sent</h3>
+              <OfferList userId={userId} role="buyer" onOfferAccepted={fetchListings} />
             </div>
           </div>
         )}

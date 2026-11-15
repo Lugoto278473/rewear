@@ -142,7 +142,7 @@
   border-color: #c0392b;
 }
 
-.offer-btn, .buy-btn {
+.offer-btn, .buy-btn, .inquire-btn {
   flex: 1;
   padding: 9px;
   border: none;
@@ -151,6 +151,18 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
+}
+
+.inquire-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.inquire-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--surface);
 }
 
 .offer-btn {
