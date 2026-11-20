@@ -47,9 +47,21 @@ describe('mock client', () => {
       .order('created_at', { ascending: false });
 
     expect(error).toBeNull();
-    expect(data).toHaveLength(4);
+    expect(data).toHaveLength(6);
     expect(data[0].title).toMatch(/wool overcoat/i);
     expect(data[0].users.username).toBe('ada');
+  });
+
+  test('filters kids and baby listings', async () => {
+    const { data, error } = await createMockClient()
+      .from('listings')
+      .select('*')
+      .eq('category', 'kids')
+      .eq('status', 'active');
+
+    expect(error).toBeNull();
+    expect(data).toHaveLength(1);
+    expect(data[0].title).toMatch(/Patagonia/i);
   });
 
   test('sign-up creates a profile and an active session', async () => {

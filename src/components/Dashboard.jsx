@@ -32,11 +32,13 @@ export default function Dashboard({ session, onLogin }) {
 
   const CATEGORIES = [
     { id: 'all', label: '🔥 All Finds' },
+    { id: 'kids', label: '👶 Kids & Baby' },
+    { id: 'women', label: '👗 Women’s' },
+    { id: 'men', label: '👔 Men’s' },
     { id: 'clothing', label: '👕 Vintage & Tees' },
     { id: 'jackets', label: '🧥 Workwear & Jackets' },
     { id: 'denim', label: '👖 Denim & Jeans' },
     { id: 'shoes', label: '👟 Kicks & Shoes' },
-    { id: 'sports', label: '⚽ Jerseys & Sports' },
     { id: 'accessories', label: '🧢 Caps & Gear' },
   ];
 
@@ -86,7 +88,30 @@ export default function Dashboard({ session, onLogin }) {
 
       let matchesCat = true;
       if (cat !== 'all') {
-        if (cat === 'jackets') {
+        if (cat === 'kids') {
+          matchesCat =
+            itemCat === 'kids' ||
+            itemCat === 'baby' ||
+            itemTitle.includes('kid') ||
+            itemTitle.includes('baby') ||
+            itemTitle.includes('toddler') ||
+            itemTitle.includes('infant') ||
+            itemDesc.includes('kid') ||
+            itemDesc.includes('baby') ||
+            itemDesc.includes('toddler');
+        } else if (cat === 'women') {
+          matchesCat =
+            itemCat === 'women' ||
+            itemTitle.includes('women') ||
+            itemTitle.includes('dress') ||
+            itemTitle.includes('skirt') ||
+            itemDesc.includes('women');
+        } else if (cat === 'men') {
+          matchesCat =
+            itemCat === 'men' ||
+            itemTitle.includes('men') ||
+            itemDesc.includes('men');
+        } else if (cat === 'jackets') {
           matchesCat =
             itemCat.includes('jacket') ||
             itemCat.includes('outerwear') ||
@@ -105,18 +130,21 @@ export default function Dashboard({ session, onLogin }) {
             itemCat.includes('shoe') ||
             itemTitle.includes('shoe') ||
             itemTitle.includes('sneaker') ||
-            itemTitle.includes('kick');
-        } else if (cat === 'sports') {
-          matchesCat =
-            itemCat.includes('sport') ||
-            itemTitle.includes('jersey') ||
-            itemDesc.includes('jersey');
+            itemTitle.includes('kick') ||
+            itemTitle.includes('boot');
         } else if (cat === 'clothing') {
           matchesCat =
             itemCat === 'clothing' ||
+            itemCat === 'vintage' ||
             itemTitle.includes('shirt') ||
             itemTitle.includes('tee') ||
             itemTitle.includes('top');
+        } else if (cat === 'accessories') {
+          matchesCat =
+            itemCat === 'accessories' ||
+            itemTitle.includes('cap') ||
+            itemTitle.includes('hat') ||
+            itemTitle.includes('bag');
         } else {
           matchesCat = itemCat === cat || itemTitle.includes(cat);
         }

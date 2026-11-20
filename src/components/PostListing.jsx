@@ -244,12 +244,17 @@ export default function PostListing({ onListingCreated }) {
           name="category"
           value={formData.category}
           onChange={handleChange}
+          aria-label="Item category"
         >
-          <option value="clothing">Clothing</option>
-          <option value="electronics">Electronics</option>
-          <option value="furniture">Furniture</option>
-          <option value="books">Books</option>
-          <option value="other">Other</option>
+          <option value="kids">👶 Kids & Baby</option>
+          <option value="women">👗 Women's</option>
+          <option value="men">👔 Men's</option>
+          <option value="clothing">👕 Vintage & Tees</option>
+          <option value="jackets">🧥 Jackets & Outerwear</option>
+          <option value="denim">👖 Denim & Jeans</option>
+          <option value="shoes">👟 Shoes & Kicks</option>
+          <option value="accessories">🧢 Gear & Accessories</option>
+          <option value="other">🏷️ Other</option>
         </select>
 
         <select

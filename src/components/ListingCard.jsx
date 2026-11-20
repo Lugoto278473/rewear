@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { distanceMiles, formatDistance } from '../location';
 import '../styles/ListingCard.css';
 
@@ -7,6 +7,32 @@ const PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Crect width='250' height='250' fill='%23f2f1ee'/%3E%3Ctext x='50%25' y='50%25' fill='%239ca3af' font-family='sans-serif' font-size='13' text-anchor='middle'%3ENo photo%3C/text%3E%3C/svg%3E";
 
 export default function ListingCard({ listing, isOwn, viewerLocation, onBuyNow, onMakeOffer, onMessage, onDelete }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async (e) => {
+    e.stopPropagation();
+    const shareData = {
+      title: `${listing.title} on ReWear`,
+      text: `Check out this ${listing.title} ($${listing.price}) on ReWear!`,
+      url: window.location.href.split('?')[0] + `?item=${listing.id}`,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // User dismissed share dialog
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        // Clipboard access denied
+      }
+    }
+  };
   const image =
     listing.images && listing.images.length > 0
       ? listing.images[0]
@@ -61,6 +87,14 @@ export default function ListingCard({ listing, isOwn, viewerLocation, onBuyNow, 
         <div className="listing-footer">
           <span className="price">${listing.price}</span>
           <span className="seller">by {listing.users?.username}</span>
+          <button
+            type="button"
+            className={`share-btn ${copied ? 'copied' : ''}`}
+            onClick={handleShare}
+            title="Share this listing"
+          >
+            {copied ? '✓ Copied' : '↗ Share'}
+          </button>
         </div>
         <div className="listing-rating">
           {listing.users?.rating ? (

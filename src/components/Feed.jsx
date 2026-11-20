@@ -8,7 +8,27 @@ function FeedItem({ listing, isOwn, active, onBuyNow, onMakeOffer, onMessage }) 
   const videoRef = useRef(null);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [muted, setMuted] = useState(true);
+  const [copied, setCopied] = useState(false);
   const photos = listing.images?.length ? listing.images : [];
+
+  const handleShare = async () => {
+    const shareData = {
+      title: `${listing.title} on ReWear`,
+      text: `Check out this ${listing.title} ($${listing.price}) on ReWear!`,
+      url: window.location.href.split('?')[0] + `?item=${listing.id}`,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {}
+    }
+  };
 
   // Only the item on screen plays.
   useEffect(() => {
@@ -69,19 +89,24 @@ function FeedItem({ listing, isOwn, active, onBuyNow, onMakeOffer, onMessage }) 
           {listing.description && <p className="feed-desc">{listing.description}</p>}
         </div>
 
-        {!isOwn && (
-          <div className="feed-actions">
-            <button onClick={() => onBuyNow(listing)}>
-              <span>🛍️</span>Buy
-            </button>
-            <button onClick={() => onMakeOffer(listing)}>
-              <span>💸</span>Offer
-            </button>
-            <button onClick={() => onMessage(listing)}>
-              <span>💬</span>Message
-            </button>
-          </div>
-        )}
+        <div className="feed-actions">
+          {!isOwn && (
+            <>
+              <button onClick={() => onBuyNow(listing)}>
+                <span>🛍️</span>Buy
+              </button>
+              <button onClick={() => onMakeOffer(listing)}>
+                <span>💸</span>Offer
+              </button>
+              <button onClick={() => onMessage(listing)}>
+                <span>💬</span>Message
+              </button>
+            </>
+          )}
+          <button onClick={handleShare}>
+            <span>{copied ? '✓' : '↗️'}</span>{copied ? 'Copied' : 'Share'}
+          </button>
+        </div>
       </div>
     </section>
   );
