@@ -356,3 +356,238 @@
   color: #fff;
   border-color: #111;
 }
+
+/* 0% Seller Fee Top Announcement Banner */
+.zero-fee-banner {
+  background: linear-gradient(90deg, #0f7a5a 0%, #128764 50%, #0d6e50 100%);
+  color: #ffffff;
+  padding: 9px 24px;
+  position: relative;
+  z-index: 15;
+  box-shadow: 0 1px 3px rgba(15, 122, 90, 0.2);
+}
+
+.zero-fee-banner-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.zero-fee-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.zero-fee-pill {
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.zero-fee-text {
+  color: #ffffff;
+  line-height: 1.4;
+}
+
+.zero-fee-text strong {
+  font-weight: 700;
+}
+
+.zero-fee-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.zero-fee-cta-btn {
+  padding: 5px 14px;
+  background: #ffffff;
+  color: var(--accent);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.zero-fee-cta-btn:hover {
+  background: #f0fdf4;
+  transform: translateY(-1px);
+}
+
+.zero-fee-dismiss-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.zero-fee-dismiss-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Browse View 0% Seller Fee Hero Banner */
+.browse-hero-banner {
+  background: linear-gradient(135deg, #0f7a5a 0%, #09523c 100%);
+  color: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.browse-hero-banner::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.browse-hero-content {
+  flex: 1;
+  max-width: 580px;
+  z-index: 1;
+}
+
+.hero-pill {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.browse-hero-content h2 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  color: #ffffff;
+  line-height: 1.25;
+}
+
+.browse-hero-content p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0 0 18px;
+}
+
+.browse-hero-cta {
+  padding: 10px 22px;
+  background: #ffffff;
+  color: var(--accent);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.browse-hero-cta:hover {
+  background: #f0fdf4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.browse-hero-stats {
+  display: flex;
+  gap: 16px;
+  z-index: 1;
+}
+
+.hero-stat-card {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  min-width: 105px;
+  text-align: center;
+}
+
+.hero-stat-number {
+  display: block;
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.hero-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+@media (max-width: 768px) {
+  .zero-fee-banner {
+    padding: 8px 14px;
+  }
+  .zero-fee-banner-container {
+    gap: 8px;
+  }
+  .zero-fee-text {
+    font-size: 12px;
+  }
+  .browse-hero-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 22px 20px;
+    gap: 20px;
+  }
+  .browse-hero-stats {
+    width: 100%;
+    justify-content: space-around;
+  }
+  .hero-stat-card {
+    flex: 1;
+    padding: 12px 10px;
+    min-width: auto;
+  }
+  .hero-stat-number {
+    font-size: 22px;
+  }
+}

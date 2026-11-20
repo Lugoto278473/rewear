@@ -24,6 +24,14 @@ export default function Dashboard({ session, onLogin }) {
   const [user, setUser] = useState(null);
   const [userReviews, setUserReviews] = useState([]);
   const [viewerLocation, setViewerLocation] = useState(DEFAULT_LOCATION);
+  const [showZeroFeeBanner, setShowZeroFeeBanner] = useState(() => {
+    return localStorage.getItem('rewear:zeroFeeBannerDismissed') !== 'true';
+  });
+
+  const handleDismissBanner = () => {
+    setShowZeroFeeBanner(false);
+    localStorage.setItem('rewear:zeroFeeBannerDismissed', 'true');
+  };
 
   // Safe Trade Checkout & Offer Modals
   const [checkoutListing, setCheckoutListing] = useState(null);
@@ -428,6 +436,35 @@ export default function Dashboard({ session, onLogin }) {
 
   return (
     <div className="dashboard">
+      {showZeroFeeBanner && (
+        <aside className="zero-fee-banner" role="banner" aria-label="0% Seller Fee Announcement">
+          <div className="zero-fee-banner-container">
+            <div className="zero-fee-banner-content">
+              <span className="zero-fee-pill">✨ 0% SELLER FEE</span>
+              <span className="zero-fee-text">
+                Keep <strong>100%</strong> of what you sell! ReWear charges zero seller fees.
+              </span>
+            </div>
+            <div className="zero-fee-banner-actions">
+              <button
+                className="zero-fee-cta-btn"
+                onClick={() => goTo('post')}
+              >
+                Sell Now →
+              </button>
+              <button
+                className="zero-fee-dismiss-btn"
+                onClick={handleDismissBanner}
+                aria-label="Dismiss 0% seller fee banner"
+                title="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
+
       <header className="header">
         <h1>
           <button className="brand" onClick={() => goTo('browse')}>
@@ -495,6 +532,33 @@ export default function Dashboard({ session, onLogin }) {
       <main className="content">
         {view === 'browse' && (
           <div className="browse-section">
+            <div className="browse-hero-banner">
+              <div className="browse-hero-content">
+                <span className="hero-pill">✨ 0% SELLER COMMISSION</span>
+                <h2>Keep 100% of what you sell.</h2>
+                <p>
+                  Zero seller fees. No listing cut, no commission taken. List in under 60 seconds with photos or video, protected by Safe Trade escrow.
+                </p>
+                <button className="browse-hero-cta" onClick={() => goTo('post')}>
+                  Post an Item for Free →
+                </button>
+              </div>
+              <div className="browse-hero-stats">
+                <div className="hero-stat-card">
+                  <span className="hero-stat-number">0%</span>
+                  <span className="hero-stat-label">Seller Fee</span>
+                </div>
+                <div className="hero-stat-card">
+                  <span className="hero-stat-number">100%</span>
+                  <span className="hero-stat-label">Keep Earnings</span>
+                </div>
+                <div className="hero-stat-card">
+                  <span className="hero-stat-number">🛡️</span>
+                  <span className="hero-stat-label">Safe Trade</span>
+                </div>
+              </div>
+            </div>
+
             <h2>Browse Items</h2>
             <input
               type="search"
